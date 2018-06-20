@@ -1,0 +1,39 @@
+{
+  "private": true,
+  "name": "cryptomon-images-lambda",
+  "version": "0.0.0",
+  "description": "",
+  "scripts": {
+    "postinstall": "gulp install",
+    "test": "gulp invoke-local",
+    "test-local": "node test.js"
+  },
+  "author": " <>",
+  "contributors": [
+    {
+      "name": "",
+      "email": ""
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "license": "MIT",
+  "main": "main.js",
+  "dependencies": {
+    "aws-cwlogs": "^2.5.0",
+    "cli-color": "^1.2.0",
+    "gm": "^1.23.1",
+    "gulp": "^3.9.1",
+    "gulp-help-doc": "^1.1.0",
+    "gulp-install": "^1.1.0",
+    "inquirer": "^5.2.0",
+    "moment": "^2.22.0",
+    "zip-dir": "^1.0.2"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.220.1",
+    "eslint": "^4.19.1"
+  }
+}

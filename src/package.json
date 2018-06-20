@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "name": "cryptomon-images-lambda",
+  "description": "",
+  "author": " <>",
+  "contributors": [
+    {
+      "name": "",
+      "email": ""
+    }
+  ],
+  "dependencies": {
+    "gm": "^1.23.1"
+  }
+}
