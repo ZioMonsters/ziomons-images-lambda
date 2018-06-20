@@ -1,44 +1,39 @@
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3({ region: 'eu-west-1' });
-
 const gm = require('gm').subClass({ imageMagick:true });
 const { createReadStream, createWriteStream, writeFileSync } = require('fs');
 
-const getPercentColorChange = () => {
+const getColorChangePercentage = () => {
   const out = [];
-  for(let i = 0; i < 3; i++) {
-    let randInt = Math.floor(Math.random() * 100);
-    if(randInt > 75) randInt = Math.floor(Math.random() * 100) - 25;
-    out.push(randInt);
+  for (let i = 0; i < 3; i++) {
+    const randInt = Math.floor(Math.random() * 100);
+    if (randInt > 75) {
+      out.push(Math.floor(Math.random() * 100) - 25)
+    } else {
+      out.push(randInt);
+    }
   }
   return out;
 };
 
 //1 minuto ./tmp
 const imageColorize = imageToUse => new Promise(resolve => {
-  const [ red, green, blue ] = getPercentColorChange();
-
-  const arrayTemp = [...imageToUse].slice(2);
-
-  const out = [];
-
-  arrayTemp.forEach(image => {
-    out.push([
+  resolve([...imageToUse].slice(2).map(image => {
+    return [
       `${image.slice(0, -4)}_colorize.svg`,
       gm(createReadStream(`./images/${image}`), 'svg.svg')
         .background('transparent')
-        .colorize(red, green, blue)
+        .colorize(...getColorChangePercentage())
         .stream('svg')
-    ])
-  });
-  resolve(out)
+    ];
+  }));
 });
 
 //=================================== main
 
-const git 
-const mobDataEntries = Object.entries();
-const { id } = mobDataEntries[0];
+const data = require('./mobData.json');
+const mobDataEntries = Object.entries(data);
+const { id } = data;
 const mobData = [...mobDataEntries].slice(1);
 const mobDataLen = mobData.length;
 const imageToUse = mobDataEntries.map(([, fileName]) => fileName);
