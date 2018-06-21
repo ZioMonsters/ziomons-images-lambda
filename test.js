@@ -16,28 +16,20 @@ const getColorChangePercentage = () => {
   return out;
 };
 
-//1 minuto ./tmp
-const imageColorize = imagesToUse => new Promise(resolve => {
-  resolve(imagesToUse.map(image => {
-    return [
-      `${image}_colorize.svg`,
-      gm(createReadStream(`./images/${image}.svg`), 'svg.svg')
-        .background('transparent')
-        .colorize(50, 50, 0)
-        .stream('svg')
-    ];
-  }));
-});
-
 //=================================== main
 
 const { id, layers } = require('./mobData.json');
-
 const background = layers.shift();
+
+layers.forEach(layer => gm(createReadStream(`./images/${layer}.svg`), '*.svg')
+  .background('transparent')
+  .colorize(...getColorChangePercentage())
+  .write(`./images/${layer}_colorize.svg`, err => err ? console.error(err) : console.log('write image colorize')));
+
 layers.reduce((acc, layer) => {
   return acc
     .background('transparent')
-    .composite(`./images/${layer}.svg`);
+    .composite(`./images/${layer}_colorize.svg`);
 }, gm(`./images/${background}.svg`))
-  .stream('jpg')
-  .pipe(createWriteStream('./images/test.jpg'));
+  .stream('svg')
+  .pipe(createWriteStream(`./images/Sprite_${id}.svg`));

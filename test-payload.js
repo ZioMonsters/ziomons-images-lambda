@@ -1,5 +1,8 @@
 module.exports = {
-  key1: 'value1',
-  key2: 'value2',
-  key3: 'value3'
+  id: 0,
+  layers: [
+    'background_1',
+    'head_1',
+    'eyes_1'
+  ]
 };
