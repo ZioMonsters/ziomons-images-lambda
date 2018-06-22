@@ -18,7 +18,7 @@ const getColorChangePercentage = () => {
 
 //=================================== main
 
-const { id, layers } = require('./mobData.json');
+const { id, layers } = require('./test-payload');
 const background = layers.shift();
 
 layers.forEach(layer => gm(createReadStream(`./images/${layer}.svg`), '*.svg')

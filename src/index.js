@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3({ region: 'eu-west-1' });
 const gm = require('gm').subClass({ imageMagick: true });
-const { createReadStream } = require('fs');
+const genomeParser = require('./genomeParser');
 
 const getColorChangePercentage = () => {
   const out = [];
@@ -17,20 +17,24 @@ const getColorChangePercentage = () => {
 };
 
 exports.handler = (event, context, callback) => {
-  const { id, layers } = event;
+  const { id, layers } = genomeParser(event);
   const background = layers.shift();
 
   layers.forEach(layer =>
-    gm(createReadStream(`./layers/${layer}.svg`), '*.svg')
+    gm(`./src/layers/${layer}.svg`)
       .background('transparent')
       .colorize(...getColorChangePercentage())
-      .write(`./tmp/${layer}_colorize.svg`, err => err ? console.error(err) : console.log('write image colorize')));
+      .write(`/tmp/${layer}_colorize.svg`, err => err ? console.error(err) : console.log('write image colorize')));
 
-  layers.reduce((acc, layer) => {
-    return acc
+  layers.reduce((acc, layer, index) => {
+    acc
       .background('transparent')
-      .composite(`./tmp/${layer}_colorize.svg`);
-  }, gm(createReadStream(`./layers/${background}.svg`), '*.svg'))
+      .composite(`/tmp/${layer}_colorize.svg`)
+      .write(`/tmp/step${index}.svg`, err => {
+        if(err) console.error(err);
+      });
+    return gm(`/tmp/step${index}.svg`);
+  }, gm(`./src/layers/${background}.svg`))
     .toBuffer('SVG', (err, buffer) => {
       if(err) console.error(err);
       const putParams = {
