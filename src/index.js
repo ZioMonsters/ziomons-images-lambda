@@ -1,6 +1,7 @@
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3({ region: 'eu-west-1' });
 const gm = require('gm').subClass({ imageMagick: true });
+const { createReadStream, writeFileSync } = require('fs');
 const genomeParser = require('./genomeParser');
 
 const getColorChangePercentage = () => {
@@ -18,33 +19,38 @@ const getColorChangePercentage = () => {
 
 exports.handler = (event, context, callback) => {
   const { id, layers } = genomeParser(event);
-  const background = layers.shift();
 
-  layers.forEach(layer =>
+  layers.slice(1).forEach(layer =>
     gm(`./src/layers/${layer}.svg`)
       .background('transparent')
       .colorize(...getColorChangePercentage())
-      .write(`/tmp/${layer}_colorize.svg`, err => err ? console.error(err) : console.log('write image colorize')));
+      .toBuffer('SVG', (err, buffer) => {
+        if(err) console.log(err);
+        writeFileSync(`/tmp/${layer}.svg`, buffer)
+      }));
 
-  layers.reduce((acc, layer, index) => {
-    acc
-      .background('transparent')
-      .composite(`/tmp/${layer}_colorize.svg`)
-      .write(`/tmp/step${index}.svg`, err => {
-        if(err) console.error(err);
-      });
-    return gm(`/tmp/step${index}.svg`);
-  }, gm(`./src/layers/${background}.svg`))
-    .toBuffer('SVG', (err, buffer) => {
-      if(err) console.error(err);
-      const putParams = {
-        Key: `images/Sprite_${id}.svg`,
+  const arrayLayers = [ [...layers.slice(1)], [...layers.slice(2)] ];
+  arrayLayers.forEach((array, index) => {
+    let path;
+    let Key;
+    (index === 0) ? path = './src/layers/' : path = '/tmp/';
+    (index === 0) ? Key = `images/Sprite_${id}_BG.svg` : Key = `images/Sprite_${id}.svg`;
+    const stream = array.reduce((acc, layer) =>
+      gm(acc, '*.svg')
+        .background('transparent')
+        .composite(`/tmp/${layer}.svg`)
+        .stream('svg'), createReadStream(`${path}${layers[index]}.svg`));
+
+    const chunks = [];
+    stream.on('data', (chunk) => chunks.push(chunk));
+    stream.once('end', () => {
+      s3.putObject({
+        Key,
         Bucket: 'cryptomon',
-        Body: buffer
-      };
-      s3.putObject(putParams)
-        .promise()
-        .then(_ => console.log('cryptomon created'))
+        Body: Buffer.concat(chunks)
+      }).promise()
+        .then(_ => console.log('upload on s3'))
         .catch(console.error);
-    });
+    })
+  });
 };
