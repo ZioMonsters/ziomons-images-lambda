@@ -29,28 +29,21 @@ exports.handler = (event, context, callback) => {
         writeFileSync(`/tmp/${layer}.svg`, buffer)
       }));
 
-  const arrayLayers = [ [...layers.slice(1)], [...layers.slice(2)] ];
-  arrayLayers.forEach((array, index) => {
-    let path;
-    let Key;
-    (index === 0) ? path = './src/layers/' : path = '/tmp/';
-    (index === 0) ? Key = `images/Sprite_${id}_BG.svg` : Key = `images/Sprite_${id}.svg`;
-    const stream = array.reduce((acc, layer) =>
-      gm(acc, '*.svg')
-        .background('transparent')
-        .composite(`/tmp/${layer}.svg`)
-        .stream('svg'), createReadStream(`${path}${layers[index]}.svg`));
+  const stream = layers.slice(1).reduce((acc, layer) =>
+    gm(acc)
+      .background('transparent')
+      .composite(`/tmp/${layer}.svg`)
+      .stream('svg'), createReadStream(`./src/layers/${layers[0]}.svg`));
 
-    const chunks = [];
-    stream.on('data', (chunk) => chunks.push(chunk));
-    stream.once('end', () => {
-      s3.putObject({
-        Key,
-        Bucket: 'cryptomon',
-        Body: Buffer.concat(chunks)
-      }).promise()
-        .then(_ => console.log('upload on s3'))
-        .catch(console.error);
-    })
+  const chunks = [];
+  stream.on('data', (chunk) => chunks.push(chunk));
+  stream.once('end', () => {
+    s3.putObject({
+      Key: `images/Sprite_${id}.svg`,
+      Bucket: 'cryptomon',
+      Body: Buffer.concat(chunks)
+    }).promise()
+      .then(_ => console.log('upload on s3'))
+      .catch(console.error);
   });
 };
