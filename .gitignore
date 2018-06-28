@@ -4,3 +4,5 @@ dist.zip
 *.log
 package-lock.json
 .credentials.json
+test-credentials.json
+images/
