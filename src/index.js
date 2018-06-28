@@ -1,8 +1,5 @@
 const AWS = require('aws-sdk');
-const s3 = new AWS.S3({
-  region: 'eu-west-1',
-  credentials: new AWS.Credentials(require('../test-credentials.json'))
-});
+const s3 = new AWS.S3({ region: 'eu-west-1' });
 const gm = require('gm').subClass({ imageMagick: true });
 const { createReadStream, writeFileSync } = require('fs');
 const genomeParser = require('./genomeParser');
