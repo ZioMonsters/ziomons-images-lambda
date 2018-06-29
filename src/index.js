@@ -28,7 +28,7 @@ exports.handler = (event, context, callback) => {
     .then(_ => console.log('Sprite monster already created'))
     .catch(_ => {
       layers.slice(1).forEach(layer =>
-        gm(`./src/layers/${layer}.svg`)
+        gm(`./layers/${layer}.svg`)
           .background('transparent')
           .colorize(...getColorChangePercentage())
           .toBuffer('SVG', (err, buffer) => {
@@ -40,7 +40,7 @@ exports.handler = (event, context, callback) => {
         gm(acc)
           .background('transparent')
           .composite(`/tmp/${layer}.svg`)
-          .stream('svg'), createReadStream(`./src/layers/${layers[0]}.svg`));
+          .stream('svg'), createReadStream(`./layers/${layers[0]}.svg`));
 
       const chunks = [];
       stream.on('data', chunk => chunks.push(chunk));
