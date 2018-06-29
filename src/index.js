@@ -17,8 +17,8 @@ const getColorChangePercentage = () => {
   return out;
 };
 
-exports.handler = (event, context, callback) => {
-  const { id, layers } = genomeParser(event);
+exports.handler = ({ tokenId }, context, callback) => {
+  const { id, layers } = genomeParser(tokenId);
   const idKey = id.toString().split().reverse().join('');
 
   s3.headObject({
