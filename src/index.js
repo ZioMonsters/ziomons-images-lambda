@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3({ region: 'eu-west-1' });
 const gm = require('gm').subClass({ imageMagick: true });
-const { writeFileSync } = require('fs');
+const { createReadStream, writeFileSync } = require('fs');
 const genomeParser = require('./genomeParser');
 
 const getColorChangePercentage = () => {
@@ -28,7 +28,7 @@ exports.handler = ({ tokenId }, context, callback) => {
     .then(_ => console.log('Sprite monster already created'))
     .catch(_ => {
       layers.slice(1).forEach(layer =>
-        gm(`./layers/${layer}.svg`)
+        gm(`./src/layers/${layer}.svg`)
           .background('transparent')
           .colorize(...getColorChangePercentage())
           .toBuffer('SVG', (err, buffer) => {
@@ -36,34 +36,22 @@ exports.handler = ({ tokenId }, context, callback) => {
             writeFileSync(`/tmp/${layer}.svg`, buffer)
           }));
 
-
       const final = layers.slice(1).reduce((acc, layer) =>
-        acc
+        gm(acc, '*.svg')
           .background('transparent')
-          .composite(`/tmp/${layer}.svg`), gm(`./layers/${layers[0]}.svg`));
+          .composite(`/tmp/${layer}.svg`)
+          .stream('svg'), createReadStream(`./src/layers/${layers[0]}.svg`));
 
-      final.toBuffer('SVG', (err, buffer) => {
-        if(err) console.error(err);
-        s3.putObject({
-          Key: `monsters/${idKey}.svg`,
-          Bucket: 'cryptomon',
-          Body: buffer
-        }).promise()
-          .then(_ => console.log('upload on s3'))
-          .catch(console.error);
-      })
-
-    //   const chunks = [];
-    //   stream.on('data', chunk => chunks.push(chunk));
-    //   stream.once('end', () => {
-    //     s3.putObject({
-    //       Key: `monsters/${idKey}.svg`,
-    //       Bucket: 'cryptomon',
-    //       Body: Buffer.concat(chunks)
-    //     }).promise()
-    //       .then(_ => console.log('upload on s3'))
-    //       .catch(console.error);
-    //   });
-    // });
-  });
+       const chunks = [];
+       final.on('data', chunk => chunks.push(chunk));
+       final.once('end', () => {
+         s3.putObject({
+           Key: `monsters/${idKey}.svg`,
+           Bucket: 'cryptomon',
+           Body: Buffer.concat(chunks)
+         }).promise()
+           .then(_ => console.log('upload on s3'))
+           .catch(console.error);
+       });
+    });
 };
