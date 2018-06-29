@@ -43,13 +43,14 @@ exports.handler = ({ tokenId }, context, callback) => {
           .composite(`/tmp/${layer}.svg`), `./layers/${layers[0]}.svg`);
 
       final.toBuffer('SVG', (err, buffer) => {
+        if(err) console.error(err);
         s3.putObject({
-        Key: `monsters/${idKey}.svg`,
-        Bucket: 'cryptomon',
-        Body: buffer
-      }).promise()
-        .then(_ => console.log('upload on s3'))
-        .catch(console.error);
+          Key: `monsters/${idKey}.svg`,
+          Bucket: 'cryptomon',
+          Body: buffer
+        }).promise()
+          .then(_ => console.log('upload on s3'))
+          .catch(console.error);
       })
 
     //   const chunks = [];
@@ -64,4 +65,5 @@ exports.handler = ({ tokenId }, context, callback) => {
     //       .catch(console.error);
     //   });
     // });
+  });
 };
