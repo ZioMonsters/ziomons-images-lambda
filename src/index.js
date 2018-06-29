@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3({ region: 'eu-west-1' });
 const gm = require('gm').subClass({ imageMagick: true });
-const { createReadStream, writeFileSync } = require('fs');
+const { writeFileSync } = require('fs');
 const genomeParser = require('./genomeParser');
 
 const getColorChangePercentage = () => {
@@ -40,7 +40,7 @@ exports.handler = ({ tokenId }, context, callback) => {
         gm(acc)
           .background('transparent')
           .composite(`/tmp/${layer}.svg`)
-          .stream('svg'), createReadStream(`./layers/${layers[0]}.svg`));
+          .stream('svg'), `./layers/${layers[0]}.svg`);
 
       const chunks = [];
       stream.on('data', chunk => chunks.push(chunk));
