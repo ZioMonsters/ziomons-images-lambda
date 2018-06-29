@@ -36,22 +36,32 @@ exports.handler = ({ tokenId }, context, callback) => {
             writeFileSync(`/tmp/${layer}.svg`, buffer)
           }));
 
-      const stream = layers.slice(1).reduce((acc, layer) =>
+
+      const final = layers.slice(1).reduce((acc, layer) =>
         gm(acc)
           .background('transparent')
-          .composite(`/tmp/${layer}.svg`)
-          .stream('svg'), `./layers/${layers[0]}.svg`);
+          .composite(`/tmp/${layer}.svg`), `./layers/${layers[0]}.svg`);
 
-      const chunks = [];
-      stream.on('data', chunk => chunks.push(chunk));
-      stream.once('end', () => {
+      final.toBuffer('SVG', (err, buffer) => {
         s3.putObject({
-          Key: `monsters/${idKey}.svg`,
-          Bucket: 'cryptomon',
-          Body: Buffer.concat(chunks)
-        }).promise()
-          .then(_ => console.log('upload on s3'))
-          .catch(console.error);
-      });
-    });
+        Key: `monsters/${idKey}.svg`,
+        Bucket: 'cryptomon',
+        Body: buffer
+      }).promise()
+        .then(_ => console.log('upload on s3'))
+        .catch(console.error);
+      })
+
+    //   const chunks = [];
+    //   stream.on('data', chunk => chunks.push(chunk));
+    //   stream.once('end', () => {
+    //     s3.putObject({
+    //       Key: `monsters/${idKey}.svg`,
+    //       Bucket: 'cryptomon',
+    //       Body: Buffer.concat(chunks)
+    //     }).promise()
+    //       .then(_ => console.log('upload on s3'))
+    //       .catch(console.error);
+    //   });
+    // });
 };
