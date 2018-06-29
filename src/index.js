@@ -38,9 +38,9 @@ exports.handler = ({ tokenId }, context, callback) => {
 
 
       const final = layers.slice(1).reduce((acc, layer) =>
-        gm(acc)
+        acc
           .background('transparent')
-          .composite(`/tmp/${layer}.svg`), `./layers/${layers[0]}.svg`);
+          .composite(`/tmp/${layer}.svg`), gm(`./layers/${layers[0]}.svg`));
 
       final.toBuffer('SVG', (err, buffer) => {
         if(err) console.error(err);
