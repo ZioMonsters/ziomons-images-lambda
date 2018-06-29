@@ -52,6 +52,6 @@ exports.handler = (event, context, callback) => {
         }).promise()
           .then(_ => console.log('upload on s3'))
           .catch(console.error);
-      })
+      });
     });
 };
