@@ -33,13 +33,13 @@ exports.handler = ({ tokenId }, context, callback) => {
           .colorize(...getColorChangePercentage())
           .toBuffer('SVG', (err, buffer) => {
             if(err) console.error(err);
-            writeFileSync(`/tmp/${layer}.svg`, buffer)
+            writeFileSync(`/tmp/${layer}_${id}.svg`, buffer)
           }));
 
       const final = layers.slice(1).reduce((acc, layer) =>
         gm(acc, '*.svg')
           .background('transparent')
-          .composite(`/tmp/${layer}.svg`)
+          .composite(`/tmp/${layer}_${id}.svg`)
           .stream('svg'), createReadStream(`./layers/${layers[0]}.svg`));
 
        const chunks = [];
