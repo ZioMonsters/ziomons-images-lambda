@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const md5 = require ('md5');
 const s3 = new AWS.S3({ region: 'eu-west-1' });
-const gm = require('gm');
+const gm = require('gm').subClass({ imageMagick: true });
 const { createReadStream, writeFileSync } = require('fs');
 const genomeParser = require('./genomeParser');
 
@@ -55,6 +55,6 @@ exports.handler = ({ tokenId }, context, callback) => {
           }).promise()
             .then(_ => console.log('upload on s3'))
             .catch(console.error);
-      });
+        });
     });
 };
