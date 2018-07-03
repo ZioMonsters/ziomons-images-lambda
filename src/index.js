@@ -19,27 +19,27 @@ const getColorChangePercentage = () => {
 
 exports.handler = ({ tokenId }, context, callback) => {
   const { id, layers } = genomeParser(tokenId);
-  const idKey = id.toString().split().reverse().join('');
+  const idKey = id.toString().split('').reverse().join('');
 
   s3.headObject({
     Bucket: 'cryptomon',
     Key: `monsters/${idKey}.svg`
   }).promise()
-    .then(_ => console.log('Sprite monster already created'))
-    .catch(_ => {
+    .then(() => console.log('Sprite monster already created'))
+    .catch(() => {
       layers.slice(1).forEach(layer =>
         gm(`./layers/${layer}.svg`)
           .background('transparent')
           .colorize(...getColorChangePercentage())
           .toBuffer('SVG', (err, buffer) => {
             if(err) console.error(err);
-            writeFileSync(`/tmp/${layer}_${id}.svg`, buffer)
+            writeFileSync(`/tmp/${layer}_c.svg`, buffer)
           }));
 
       const final = layers.slice(1).reduce((acc, layer) =>
         gm(acc, '*.svg')
           .background('transparent')
-          .composite(`/tmp/${layer}_${id}.svg`)
+          .composite(`/tmp/${layer}_c.svg`)
           .stream('svg'), createReadStream(`./layers/${layers[0]}.svg`));
 
        const chunks = [];
