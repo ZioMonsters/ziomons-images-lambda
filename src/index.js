@@ -1,6 +1,7 @@
 const AWS = require('aws-sdk');
+const md5 = require ('md5');
 const s3 = new AWS.S3({ region: 'eu-west-1' });
-const gm = require('gm').subClass({ imageMagick: true });
+const gm = require('gm');
 const { createReadStream, writeFileSync } = require('fs');
 const genomeParser = require('./genomeParser');
 
@@ -19,7 +20,7 @@ const getColorChangePercentage = () => {
 
 exports.handler = ({ tokenId }, context, callback) => {
   const { id, layers } = genomeParser(tokenId);
-  const idKey = id.toString().split('').reverse().join('');
+  const idKey = md5(id.toString());
 
   s3.headObject({
     Bucket: 'cryptomon',
@@ -27,31 +28,33 @@ exports.handler = ({ tokenId }, context, callback) => {
   }).promise()
     .then(() => console.log('Sprite monster already created'))
     .catch(() => {
-      layers.slice(1).forEach(layer =>
-        gm(`./layers/${layer}.svg`)
-          .background('transparent')
-          .colorize(...getColorChangePercentage())
-          .toBuffer('SVG', (err, buffer) => {
-            if(err) console.error(err);
-            writeFileSync(`/tmp/${layer}_c.svg`, buffer)
-          }));
+      layers.slice(1)
+        .map(layer =>
+          gm(`./layers/${layer}.svg`)
+            .background('transparent')
+            .colorize(...getColorChangePercentage())
+            .stream('svg'))
+        .forEach((stream, index) => {
+          const chunks = [];
+          stream.on('data', chunk => chunks.push(chunk));
+          stream.once('end', () => writeFileSync(`/tmp/${index}.svg`, Buffer.concat(chunks)));
+        });
 
-      const final = layers.slice(1).reduce((acc, layer) =>
+      const chunks = [];
+      layers.slice(1).reduce((acc, layer, index) =>
         gm(acc, '*.svg')
           .background('transparent')
-          .composite(`/tmp/${layer}_c.svg`)
-          .stream('svg'), createReadStream(`./layers/${layers[0]}.svg`));
-
-       const chunks = [];
-       final.on('data', chunk => chunks.push(chunk));
-       final.once('end', () => {
-         s3.putObject({
-           Key: `monsters/${idKey}.svg`,
-           Bucket: 'cryptomon',
-           Body: Buffer.concat(chunks)
-         }).promise()
-           .then(_ => console.log('upload on s3'))
-           .catch(console.error);
-       });
+          .composite(`/tmp/${index}.svg`)
+          .stream('svg'), createReadStream(`./layers/${layers[0]}.svg`))
+        .on('data', chunk => chunks.push(chunk))
+        .once('end', () => {
+          s3.putObject({
+            Key: `monsters/${idKey}.svg`,
+            Bucket: 'cryptomon',
+            Body: Buffer.concat(chunks)
+          }).promise()
+            .then(_ => console.log('upload on s3'))
+            .catch(console.error);
+      });
     });
 };
