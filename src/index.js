@@ -1,7 +1,17 @@
 const AWS = require('aws-sdk');
-const md5 = require ('md5');
 const s3 = new AWS.S3({ region: 'eu-west-1' });
-const gm = require('gm').subClass({ imageMagick: true });
+
+const lambdaTaskRoot = process.env['LAMBDA_TASK_ROOT'] || __dirname;
+const IM_PATH = `${lambdaTaskRoot}/imagemagick/bin/`;
+process.env['PATH'] = `${process.env['PATH']}:${IM_PATH}`;
+process.env['LD_LIBRARY_PATH'] =  '/var/task/imagemagick/lib/';
+const gm = require('gm').subClass({
+  imageMagick: true,
+  appPath: '/var/task/imagemagick/bin/'
+});
+
+const md5 = require ('md5');
+
 const { createReadStream, writeFileSync } = require('fs');
 const genomeParser = require('./genomeParser');
 
@@ -17,6 +27,8 @@ const getColorChangePercentage = () => {
   }
   return out;
 };
+
+console.log();
 
 exports.handler = ({ tokenId }, context, callback) => {
   const { id, layers } = genomeParser(tokenId);
