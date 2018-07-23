@@ -5,7 +5,7 @@ const File = require('vinyl');
 const SVGSpriter = require('svg-sprite');
 const spriter = new SVGSpriter({
   mode: {
-    symbol: true
+    stack: true
   }
 });
 
