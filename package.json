@@ -24,12 +24,13 @@
   "dependencies": {
     "aws-cwlogs": "^2.5.0",
     "cli-color": "^1.2.0",
-    "gm": "^1.23.1",
     "gulp": "^3.9.1",
     "gulp-help-doc": "^1.1.0",
     "gulp-install": "^1.1.0",
     "inquirer": "^5.2.0",
     "moment": "^2.22.0",
+    "svg-sprite": "^1.4.0",
+    "vinyl": "^2.2.0",
     "zip-dir": "^1.0.2"
   },
   "devDependencies": {
