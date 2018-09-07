@@ -14,12 +14,13 @@ module.exports = id => {
   return {
     id,
     layers: [
-      'background_1',
       //`backgound${ parseInt(genome.substr(28, 2), 2) }`,
-      'head_1',
+      'corpo1',
       //`eyes${ parseInt(genome.substr(0, 5), 2) }`,
-      'eyes_1',
-      'hat_1'
+      'bocca1',
+      'occhi1',
+      'mani1',
+      'piedi1'
       //parseInt(genome.substr(5, 4), 2),
       //`body${ parseInt(genome.substr(9, 3), 2) }`,
       //parseInt(genome.substr(12, 4), 2),

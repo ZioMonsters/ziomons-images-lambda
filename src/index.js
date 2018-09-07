@@ -8,29 +8,14 @@ const spriter = new SVGSpriter({
     stack: true
   }
 });
-
 const md5 = require ('md5');
 
-const { resolve, join } = require('path');
-const { readFileSync } = require('fs');
 const genomeParser = require('./genomeParser');
 
-//todo: Aggiungere funzione per modificare i colori dei singoli layers
-/*const getColorChangePercentage = () => {
-  const out = [];
-  for (let i = 0; i < 3; i++) {
-    const randInt = Math.floor(Math.random() * 100);
-    if (randInt > 75) {
-      out.push(Math.floor(Math.random() * 100) - 25);
-    } else {
-      out.push(randInt);
-    }
-  }
-  return out;
-};*/
+//todo: decidere se cambiare colori da css o programmaticamente
 
 exports.handler = ({ tokenId }, context, callback) => {
-  const { id, layers } = genomeParser(tokenId);
+  const {id, layers} = genomeParser(tokenId);
   const idKey = md5(id.toString());
 
   s3.headObject({
@@ -38,24 +23,29 @@ exports.handler = ({ tokenId }, context, callback) => {
     Key: `monsters/${idKey}.svg`
   }).promise()
     .then(() => console.log('Sprite monster already created'))
-    .catch(() => {
-      const cwd = resolve('layers');
-
-      layers.forEach(layer => {
+    .catch(() => Promise.all(layers.map(layer =>
+      s3.getObject({
+        Bucket: 'cryptomon',
+        Key: `images/${layer}.svg`
+      }).promise().then(({ Body }) => Body)))
+    )
+    .then(buffers => {
+      buffers.forEach(buffer => {
         spriter.add(new File({
-          path: join(cwd, `${layer}.svg`),
-          base: cwd,
-          contents: readFileSync(join(cwd, `${layer}.svg`))
+          path: '*/*.svg',
+          base: '*/*.svg',
+          contents: buffer
         }))
       });
 
-      spriter.compile((err, { stack: { sprite: { contents } } }) => {
-        if(err) console.error(err);
+      spriter.compile((err, {stack: {sprite: {contents}}}) => {
+        if (err) console.error(err);
         else
           s3.putObject({
             Key: `monsters/${idKey}.svg`,
             Bucket: 'cryptomon',
-            Body: contents
+            Body: contents,
+            ContentType: 'image/svg+xml'
           }).promise()
             .then(() => console.log(`upload ${idKey}.svg on s3`))
             .catch(console.error);
