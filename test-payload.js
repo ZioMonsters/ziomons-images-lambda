@@ -1,3 +1,3 @@
 module.exports = {
-  tokenId: 42
+  tokenId: 4
 };
