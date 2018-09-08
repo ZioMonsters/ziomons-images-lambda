@@ -1,9 +1,10 @@
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3({ region: 'eu-west-3' });
 const SVGSpriter = require('svg-sprite');
+const File = require('vinyl');
 const md5 = require ('md5');
 const { readFileSync } = require('fs');
-const { join, resolve } = require('path');
+const { join } = require('path');
 const spriter = new SVGSpriter({
   mode: {
     stack: true
@@ -24,12 +25,21 @@ exports.handler = (event, context, callback) => {
     Key: `monsters/${idKey}.svg`
   }).promise()
     .then(() => callback(null, event))
-    .catch(() => {
-      const layersPath = join(process.env.LAMBDA_TASK_ROOT, 'layers');
-      layers.forEach(layer => {
-        const path = join(`${layersPath}`, `${layer}.svg`);
-        console.log("spiter", path)
-        spriter.add(path, null, readFileSync(path, { encoding: 'utf-8' }));
+    .catch(() =>
+      Promise.all(layers.map(layer => {
+        return s3.getObject({
+          Bucket: 'cryptomon',
+          Key: `images/${layer}.svg`
+        }).promise().then(({Body}) => Body)
+      }))
+    )
+    .then(buffers => {
+      buffers.forEach(buffer => {
+        spriter.add(new File({
+          path: '*/*.svg',
+          base: '*/*.svg',
+          contents: buffer
+        }))
       });
 
       spriter.compile((err, { stack: { sprite: { contents } } }) => {
