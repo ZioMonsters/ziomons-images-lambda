@@ -3,8 +3,6 @@ const s3 = new AWS.S3({ region: 'eu-west-3' });
 const SVGSpriter = require('svg-sprite');
 const File = require('vinyl');
 const md5 = require ('md5');
-const { readFileSync, writeFileSync } = require('fs');
-const { join } = require('path');
 const spriter = new SVGSpriter({
   mode: {
     stack: true
@@ -13,38 +11,30 @@ const spriter = new SVGSpriter({
 
 const genomeParser = require('./genomeParser');
 
-//todo
-/*const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+const detail = 'D4CCCB';
+const primary = 'AFA8A7';
+const contrast = '6E6A69';
 
-const light = 'D4CCCB';
-const shadow = 'AFA8A7';
-const dark = '6E6A69';
-
-const colors = [
-  ['', '', ''], //green
-  ['', '', ''], //pink
-  ['', '', ''], //yellow
-  ['', '', ''], // cyan
-  ['', '', ''], //blue
-  ['', '', ''], //orange
-  ['', '', ''], //red
-  ['', '', ''] //purple
+const availablePalette = [
+  ['ececd2', '89c742', '46a73e'], //green
+  ['e8cbd9', 'f96aaa', '9f446d'], //pink
+  ['f8f8e4', 'fddc15', 'fcb712'], //yellow
+  ['d7e6ed', '31c2f1', '1e7794'], //cyan
+  ['d7e9f3', '145cee', '07235b'], //blue
+  ['ede2ce', 'f27825', 'd03c0f'], //orange
+  ['eecec7', 'ec311e', 'a11b10'], //red
+  ['ebd8df', 'a24e99', '82387f'] //purple
 ];
 
-const getRandoColor = () => colors[getRandomInt(0, 7)];
+const changeColors = (buffer, [newDetail, newPrimary, newContrast]) => new Buffer(buffer.toString()
+  .replace(new RegExp(detail, 'g'), newDetail)
+  .replace(new RegExp(primary, 'g'), newPrimary)
+  .replace(new RegExp(contrast, 'g'), newContrast));
 
-const changeColors = (buffer) => {
-  const [newLight, newShadow, newDark] = getRandoColor();
-  return buffer.toString()
-    .replace(new RegExp(light, 'g'), newLight)
-    .replace(new RegExp(shadow, 'g'), newShadow)
-    .replace(new RegExp(dark, 'g'), newDark);
-};
-*/
 
 exports.handler = (event, context, callback) => {
   const { tokenId } = event;
-  const { id, layers } = genomeParser(tokenId);
+  const { id, layers, palettes } = genomeParser(tokenId);
   const idKey = md5(id.toString());
 
   s3.headObject({
@@ -56,19 +46,18 @@ exports.handler = (event, context, callback) => {
       Promise.all(layers.map(layer => {
         return s3.getObject({
           Bucket: 'cryptomon',
-          Key: `images/${layer}.svg`
+          Key: `images/${layer}`
         }).promise().then(({ Body }) => Body);
       }))
     )
     .then(buffers => {
-      //todo
-      //changeColors(buffers[0]);
-      buffers.forEach(buffer => {
+      buffers.forEach((buffer, i) => {
+        buffer = changeColors(buffer, availablePalette[palettes[i]]);
         spriter.add(new File({
           path: '*!/!*.svg',
           base: '*!/!*.svg',
           contents: buffer
-        }))
+        }));
       });
 
       spriter.compile((err, { stack: { sprite: { contents } } }) => {

@@ -1,3 +1,3 @@
 module.exports = {
-  tokenId: 5
+  tokenId: new Date().getTime()
 };
