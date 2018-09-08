@@ -3,7 +3,7 @@ const s3 = new AWS.S3({ region: 'eu-west-3' });
 const SVGSpriter = require('svg-sprite');
 const File = require('vinyl');
 const md5 = require ('md5');
-const { readFileSync } = require('fs');
+const { readFileSync, writeFileSync } = require('fs');
 const { join } = require('path');
 const spriter = new SVGSpriter({
   mode: {
@@ -13,7 +13,42 @@ const spriter = new SVGSpriter({
 
 const genomeParser = require('./genomeParser');
 
-//todo: decidere se cambiare colori da css o programmaticamente
+//todo: cambiare colori modificando il fill dell'immagine
+
+const getRandomColor = ()  => {
+  var letters = '0123456789ABCDEF';
+  var color = '#';
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+};
+
+const changeColors = buffer => {
+  /*const array = */buffer.toString()
+    .split('\n')
+    .map(e => {
+      const colorIndex = e.indexOf('#');
+      const string = e.substr(colorIndex, 7);
+      console.log(string)
+      console.log(e);
+      e.replace(string, 'ccccccccccccccccccccccccccccc'/*getRandomColor()*/);
+      console.log(e);
+      return e;/*const color = 'cccc'/!*getRandomColor()*!/;
+      console.log(e)
+      if(_index > 0){
+        console.log(color.split(''))
+        color
+          .split('')
+          .forEach((letter, index) => {
+            e[_index + index] = letter
+          });
+        console.log(e.substr(_index, _index+7))
+      }
+      return e;*/
+    });
+  //writeFileSync('./temp.svg', array.join('\n'));
+};
 
 exports.handler = (event, context, callback) => {
   const { tokenId } = event;
@@ -34,10 +69,11 @@ exports.handler = (event, context, callback) => {
       }))
     )
     .then(buffers => {
-      buffers.forEach(buffer => {
+      changeColors(buffers[0]);
+      /*buffers.forEach(buffer => {
         spriter.add(new File({
-          path: '*/*.svg',
-          base: '*/*.svg',
+          path: '*!/!*.svg',
+          base: '*!/!*.svg',
           contents: buffer
         }))
       });
@@ -53,7 +89,7 @@ exports.handler = (event, context, callback) => {
           ContentType: 'image/svg+xml'
         }).promise()
           .then(() => callback(null, event));
-      });
+      });*/
     })
     .catch(err => callback(err));
 };
