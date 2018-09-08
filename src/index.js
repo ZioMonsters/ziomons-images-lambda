@@ -13,41 +13,27 @@ const spriter = new SVGSpriter({
 
 const genomeParser = require('./genomeParser');
 
-//todo: cambiare colori modificando il fill dell'immagine
+const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-const getRandomColor = ()  => {
-  var letters = '0123456789ABCDEF';
-  var color = '#';
-  for (var i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-};
+const light = '';//todo
+const shadow = '';//todo
+const colors = [
+  ['green', ''],
+  ['pink', ''],
+  ['yellow', ''],
+  ['cyan', ''],//todo
+  ['blu', ''],
+  ['orange', ''],
+  ['red', ''],
+  ['purple', '']
+];
 
-const changeColors = buffer => {
-  /*const array = */buffer.toString()
-    .split('\n')
-    .map(e => {
-      const colorIndex = e.indexOf('#');
-      const string = e.substr(colorIndex, 7);
-      console.log(string)
-      console.log(e);
-      e.replace(string, 'ccccccccccccccccccccccccccccc'/*getRandomColor()*/);
-      console.log(e);
-      return e;/*const color = 'cccc'/!*getRandomColor()*!/;
-      console.log(e)
-      if(_index > 0){
-        console.log(color.split(''))
-        color
-          .split('')
-          .forEach((letter, index) => {
-            e[_index + index] = letter
-          });
-        console.log(e.substr(_index, _index+7))
-      }
-      return e;*/
-    });
-  //writeFileSync('./temp.svg', array.join('\n'));
+const getRandoColor = () => colors[getRandomInt(0, 7)];
+  
+const changeColors = (buffer, newLight, newShadow) => {
+  return buffer.toString()
+    .replace(new RegExp(light, 'g'), newLight)
+    .replace(new RegExp(shadow, 'g'), newShadow);
 };
 
 exports.handler = (event, context, callback) => {
@@ -65,11 +51,13 @@ exports.handler = (event, context, callback) => {
         return s3.getObject({
           Bucket: 'cryptomon',
           Key: `images/${layer}.svg`
-        }).promise().then(({Body}) => Body)
+        }).promise().then(({ Body }) => Body);
       }))
     )
     .then(buffers => {
-      changeColors(buffers[0]);
+      const [newLight, newShadow] = getRandoColor();
+      //todo
+      changeColors(buffers[0], newLight, newShadow);
       /*buffers.forEach(buffer => {
         spriter.add(new File({
           path: '*!/!*.svg',
