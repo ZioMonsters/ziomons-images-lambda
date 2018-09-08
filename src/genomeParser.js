@@ -9,18 +9,21 @@
   return (i <= Math.trunc(prime / 2)) ? residue : prime - residue;
 };*/
 
+const getRandomInt = () => Math.floor(Math.random() * (8 - 1 + 1)) + 1;
+
+
 module.exports = id => {
   //const genome = (NRRandInt((NRRandInt(id) + 92837498) ^ 0x5bf03635)).toString(2);
   return {
     id,
     layers: [
       //`backgound${ parseInt(genome.substr(28, 2), 2) }`,
-      'corpo2',
+      `corpo${getRandomInt().toString()}`,
       //`eyes${ parseInt(genome.substr(0, 5), 2) }`,
-      'bocca5',
-      'occhi3',
-      'mani7',
-      'piedi6'
+      `bocca${getRandomInt().toString()}`,
+      `occhi${getRandomInt().toString()}`,
+      `mani${getRandomInt().toString()}`,
+      `piedi${getRandomInt().toString()}`
       //parseInt(genome.substr(5, 4), 2),
       //`body${ parseInt(genome.substr(9, 3), 2) }`,
       //parseInt(genome.substr(12, 4), 2),

@@ -13,7 +13,8 @@ const spriter = new SVGSpriter({
 
 const genomeParser = require('./genomeParser');
 
-const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+//todo
+/*const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
 const light = 'D4CCCB';
 const shadow = 'AFA8A7';
@@ -31,7 +32,7 @@ const colors = [
 ];
 
 const getRandoColor = () => colors[getRandomInt(0, 7)];
-  
+
 const changeColors = (buffer) => {
   const [newLight, newShadow, newDark] = getRandoColor();
   return buffer.toString()
@@ -39,6 +40,7 @@ const changeColors = (buffer) => {
     .replace(new RegExp(shadow, 'g'), newShadow)
     .replace(new RegExp(dark, 'g'), newDark);
 };
+*/
 
 exports.handler = (event, context, callback) => {
   const { tokenId } = event;
@@ -60,8 +62,8 @@ exports.handler = (event, context, callback) => {
     )
     .then(buffers => {
       //todo
-      changeColors(buffers[0]);
-      /*buffers.forEach(buffer => {
+      //changeColors(buffers[0]);
+      buffers.forEach(buffer => {
         spriter.add(new File({
           path: '*!/!*.svg',
           base: '*!/!*.svg',
@@ -80,7 +82,7 @@ exports.handler = (event, context, callback) => {
           ContentType: 'image/svg+xml'
         }).promise()
           .then(() => callback(null, event));
-      });*/
+      });
     })
     .catch(err => callback(err));
 };
