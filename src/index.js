@@ -20,23 +20,24 @@ const shadow = 'AFA8A7';
 const dark = '6E6A69';
 
 const colors = [
-  ['d6db2f'.toUpperCase(), 'c7c61c'.toUpperCase(), ''],//green
-  ['pink', ''],
-  ['yellow', ''],
-  ['cyan', ''],//todo
-  ['blu', ''],
-  ['orange', ''],
-  ['red', ''],
-  ['purple', '']
+  ['', '', ''], //green
+  ['', '', ''], //pink
+  ['', '', ''], //yellow
+  ['', '', ''], // cyan
+  ['', '', ''], //blue
+  ['', '', ''], //orange
+  ['', '', ''], //red
+  ['', '', ''] //purple
 ];
 
 const getRandoColor = () => colors[getRandomInt(0, 7)];
   
 const changeColors = (buffer) => {
-  const [newLight, newShadow] = getRandoColor();
+  const [newLight, newShadow, newDark] = getRandoColor();
   return buffer.toString()
     .replace(new RegExp(light, 'g'), newLight)
-    .replace(new RegExp(shadow, 'g'), newShadow);
+    .replace(new RegExp(shadow, 'g'), newShadow)
+    .replace(new RegExp(dark, 'g'), newDark);
 };
 
 exports.handler = (event, context, callback) => {
