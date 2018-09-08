@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "cryptomon-images-lambda",
+  "name": "cryptomon-images-lambda-staging",
   "description": "build cryptomon sprite",
   "author": " <>",
   "contributors": [

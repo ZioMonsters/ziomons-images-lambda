@@ -8,7 +8,10 @@ const spriter = new SVGSpriter({
     stack: true
   }
 });
+
 const md5 = require ('md5');
+const { readFileSync } = require('fs');
+const { join, resolve } = require('path');
 
 const genomeParser = require('./genomeParser');
 
@@ -23,24 +26,18 @@ exports.handler = ({ tokenId }, context, callback) => {
     Key: `monsters/${idKey}.svg`
   }).promise()
     .then(() => console.log('Sprite monster already created'))
-    .catch(() => Promise.all(layers.map(layer =>
-      s3.getObject({
-        Bucket: 'cryptomon',
-        Key: `images/${layer}.svg`
-      }).promise().then(({ Body }) => Body)))
-    )
-    .then(buffers => {
-      buffers.forEach(buffer => {
-        spriter.add(new File({
-          path: '*/*.svg',
-          base: '*/*.svg',
-          contents: buffer
-        }))
+    .catch(() => {
+      const cwd = resolve('layers');
+      layers.forEach(layer => {
+        const path = join(`${cwd}`, `${layer}.svg`);
+        spriter.add(path, null, readFileSync(path, {encoding: 'utf-8'}));
+        console.log('caricato su spriter')
       });
 
-      spriter.compile((err, {stack: {sprite: {contents}}}) => {
+      spriter.compile((err, { stack: { sprite: { contents } } }) => {
         if (err) console.error(err);
         else
+          console.log('quasi fatta')
           s3.putObject({
             Key: `monsters/${idKey}.svg`,
             Bucket: 'cryptomon',
@@ -50,5 +47,6 @@ exports.handler = ({ tokenId }, context, callback) => {
             .then(() => console.log(`upload ${idKey}.svg on s3`))
             .catch(console.error);
       })
-    });
+    })
+    .catch(err => console.error(err))
 };
