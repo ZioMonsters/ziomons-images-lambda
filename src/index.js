@@ -15,10 +15,12 @@ const genomeParser = require('./genomeParser');
 
 const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-const light = '';//todo
-const shadow = '';//todo
+const light = 'D4CCCB';
+const shadow = 'AFA8A7';
+const dark = '6E6A69';
+
 const colors = [
-  ['green', ''],
+  ['d6db2f'.toUpperCase(), 'c7c61c'.toUpperCase(), ''],//green
   ['pink', ''],
   ['yellow', ''],
   ['cyan', ''],//todo
@@ -30,7 +32,8 @@ const colors = [
 
 const getRandoColor = () => colors[getRandomInt(0, 7)];
   
-const changeColors = (buffer, newLight, newShadow) => {
+const changeColors = (buffer) => {
+  const [newLight, newShadow] = getRandoColor();
   return buffer.toString()
     .replace(new RegExp(light, 'g'), newLight)
     .replace(new RegExp(shadow, 'g'), newShadow);
@@ -55,9 +58,8 @@ exports.handler = (event, context, callback) => {
       }))
     )
     .then(buffers => {
-      const [newLight, newShadow] = getRandoColor();
       //todo
-      changeColors(buffers[0], newLight, newShadow);
+      changeColors(buffers[0]);
       /*buffers.forEach(buffer => {
         spriter.add(new File({
           path: '*!/!*.svg',
